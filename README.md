@@ -4,12 +4,12 @@ Bu çalışma, Active Directory ortamının Ansible ile kurulmasını ve Rocky L
 
 ## Ortam
 
-| Sunucu | Rol | IP |
+| Sunucu | Rol | IP | OS |
 |---|---|---|
-| CASE-ANSIBLE01 | Ansible Control Node | - |
-| CASE-DC01 | Windows Server / AD DS / DNS | 192.168.1.140 |
-| CASE-LINUX01 | Rocky Linux | 192.168.1.141 |
-| CASE-LINUX02 | Rocky Linux | 192.168.1.142 |
+| CASE-ANSIBLE01 | Ansible Control Node |192.168.1.145 |Ubuntu Server 24.04.3 LTS |
+| CASE-DC01 | Windows Server / AD DS / DNS | 192.168.1.140 |Windows Server 2022 Standard 21H2 |
+| CASE-LINUX01 | Rocky Linux | 192.168.1.141 | Rocky Linux 10.1 |
+| CASE-LINUX02 | Rocky Linux | 192.168.1.142 | Rocky Linux 10.1 |
 
 Domain: `casestudy.local`
 
@@ -28,7 +28,7 @@ Domain: `casestudy.local`
          192.168.1.141             192.168.1.142
           realmd/SSSD               realmd/SSSD
 
-                    CASE-ANSIBLE01
+                    CASE-ANSIBLE01 (192.168.1.145)
                    /              \
                 WinRM             SSH
                   |                |
