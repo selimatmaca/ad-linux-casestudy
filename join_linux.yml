@@ -1,0 +1,24 @@
+---
+- name: Prepare Linux servers for Active Directory
+  hosts: linux
+  become: true
+
+  tasks:
+    - name: Install Active Directory integration packages
+      ansible.builtin.dnf:
+        name:
+          - realmd
+          - sssd
+          - adcli
+          - oddjob
+          - oddjob-mkhomedir
+          - krb5-workstation
+          - samba-common-tools
+        state: present
+
+    - name: Join Linux server to Active Directory
+      ansible.builtin.shell: |
+        echo "{{ vault_ad_admin_password }}" | realm join casestudy.local -U Administrator
+      args:
+        creates: /etc/sssd/sssd.conf
+      no_log: true

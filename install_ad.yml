@@ -1,0 +1,16 @@
+---
+- name: Install Active Directory Domain Services
+  hosts: windows
+
+  tasks:
+    - name: Install AD DS role
+      ansible.windows.win_feature:
+        name: AD-Domain-Services
+        state: present
+        include_management_tools: true
+    - name: Create new Active Directory forest
+      microsoft.ad.domain:
+        dns_domain_name: casestudy.local
+        domain_netbios_name: CASESTUDY
+        safe_mode_password: "{{ vault_ad_safe_mode_password }}"
+        reboot: true
