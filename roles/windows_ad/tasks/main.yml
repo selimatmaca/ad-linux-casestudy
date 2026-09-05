@@ -11,3 +11,64 @@
     domain_netbios_name: CASESTUDY
     safe_mode_password: "{{ vault_ad_safe_mode_password }}"
     reboot: true
+
+- name: Create CS-Users OU
+  microsoft.ad.ou:
+    name: CS-Users
+    path: DC=casestudy,DC=local
+    state: present
+
+- name: Create CS-Groups OU
+  microsoft.ad.ou:
+    name: CS-Groups
+    path: DC=casestudy,DC=local
+    state: present
+
+- name: Create CS-Servers OU
+  microsoft.ad.ou:
+    name: CS-Servers
+    path: DC=casestudy,DC=local
+    state: present
+
+- name: Create linux-admins security group
+  microsoft.ad.group:
+    name: linux-admins
+    scope: global
+    category: security
+    path: OU=CS-Groups,DC=casestudy,DC=local
+    state: present
+
+- name: Create linux-sudoers security group
+  microsoft.ad.group:
+    name: linux-sudoers
+    scope: global
+    category: security
+    path: OU=CS-Groups,DC=casestudy,DC=local
+    state: present
+
+- name: Create test domain user
+  microsoft.ad.user:
+    identity: selim.atmaca
+    firstname: Selim
+    surname: Atmaca
+    display_name: Selim Atmaca
+    upn: selim.atmaca@casestudy.local
+    path: OU=CS-Users,DC=casestudy,DC=local
+    password: "{{ vault_test_user_password }}"
+    update_password: on_create
+    enabled: true
+    state: present
+
+- name: Add test user to linux-admins group
+  microsoft.ad.group:
+    identity: linux-admins
+    members:
+      add:
+        - selim.atmaca
+
+- name: Add test user to linux-sudoers group
+  microsoft.ad.group:
+    identity: linux-sudoers
+    members:
+      add:
+        - selim.atmaca
