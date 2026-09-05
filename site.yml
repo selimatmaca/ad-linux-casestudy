@@ -1,0 +1,22 @@
+---
+- name: Configure Active Directory
+  hosts: windows
+
+  roles:
+    - windows_ad
+
+
+- name: Configure Linux Active Directory integration
+  hosts: linux
+  become: true
+
+  roles:
+    - linux_join
+
+  post_tasks:
+    - name: Restart SSSD when AD group membership changes
+      ansible.builtin.service:
+        name: sssd
+        state: restarted
+      when:
+        - hostvars[groups['windows'][0]].ad_membership_changed | default(false)

@@ -65,6 +65,7 @@
     members:
       add:
         - selim.atmaca
+  register: linux_admins_membership
 
 - name: Add test user to linux-sudoers group
   microsoft.ad.group:
@@ -72,3 +73,14 @@
     members:
       add:
         - selim.atmaca
+  register: linux_sudoers_membership
+
+- name: Record AD membership changes
+  ansible.builtin.set_fact:
+    ad_membership_changed: >-
+      {{
+        (linux_admins_membership.changed | default(false))
+        or
+        (linux_sudoers_membership.changed | default(false))
+      }}
+  changed_when: false
