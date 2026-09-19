@@ -11,18 +11,70 @@
       - samba-common-tools
     state: present
 
+
+- name: Configure Active Directory DNS
+  community.general.nmcli:
+    conn_name: "{{ ad_dns_connection }}"
+    type: ethernet
+    dns4:
+      - "{{ ad_dns_server }}"
+    dns4_ignore_auto: true
+    dns4_search:
+      - "{{ ad_domain }}"
+    state: present
+  register: dns_config
+
+- name: Reactivate network connection when DNS changes
+  ansible.builtin.command:
+    cmd: "nmcli connection up {{ ad_dns_connection }}"
+  when: dns_config.changed
+
+
+- name: Configure Linux hostname as FQDN
+  ansible.builtin.hostname:
+    name: "{{ inventory_hostname | lower }}.{{ ad_domain }}"
+
+
 - name: Join Linux server to Active Directory
   ansible.builtin.shell: |
-    echo "{{ vault_ad_admin_password }}" | realm join casestudy.local -U Administrator
+    echo "{{ vault_ad_admin_password }}" | realm join "{{ ad_domain }}" -U Administrator
   args:
     creates: /etc/sssd/sssd.conf
+  register: domain_join
   no_log: true
+
+
+- name: Configure SSSD AD hostname
+  community.general.ini_file:
+    path: /etc/sssd/sssd.conf
+    section: "domain/{{ ad_domain }}"
+    option: ad_hostname
+    value: "{{ inventory_hostname | lower}}.{{ ad_domain }}"
+  register: sssd_ad_hostname
+
+
+- name: Enable SSSD dynamic DNS updates
+  community.general.ini_file:
+    path: /etc/sssd/sssd.conf
+    section: "domain/{{ ad_domain }}"
+    option: dyndns_update
+    value: "true"
+  register: sssd_dyndns
+
+
+- name: Restart SSSD when configuration changes
+  ansible.builtin.service:
+    name: sssd
+    state: restarted
+  when:
+    - sssd_ad_hostname.changed or sssd_dyndns.changed
+
 
 - name: Grant sudo access to linux-sudoers AD group
   ansible.builtin.copy:
     dest: /etc/sudoers.d/linux-sudoers
     content: |
-      %linux-sudoers@casestudy.local ALL=(ALL) ALL
+      %linux-sudoers@{{ ad_domain }} ALL=(ALL) ALL
     owner: root
     group: root
     mode: '0440'
