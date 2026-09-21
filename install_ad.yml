@@ -1,6 +1,0 @@
----
-- name: Install Active Directory Domain Services
-  hosts: windows
-
-  roles:
-    - windows_ad

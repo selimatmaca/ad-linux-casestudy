@@ -1,7 +1,0 @@
----
-- name: Prepare Linux servers for Active Directory
-  hosts: linux
-  become: true
-
-  roles:
-    - linux_join
